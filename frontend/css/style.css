@@ -560,5 +560,8 @@ button, .waste-btn, .nav-btn {
     border-top-width: 2px !important;
 }
 
-
+#page-profile.active .profile-stagger {
+    animation: cardEntrance 0.45s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+    animation-delay: calc(var(--stagger, 0) * 0.1s);
+}
 

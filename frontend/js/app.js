@@ -43,6 +43,16 @@ document.addEventListener('DOMContentLoaded', () => {
                         window.pickupMap.invalidateSize();
                     }, 450);
                 }
+
+                // If navigating to Profile, ensure cash/weight and saved tags are refreshed
+                if (targetId === 'page-profile') {
+                    if (typeof updateProfileCashAndWeight === 'function') {
+                        updateProfileCashAndWeight();
+                    }
+                    if (typeof syncProfileSavedAddresses === 'function') {
+                        syncProfileSavedAddresses();
+                    }
+                }
             }
         });
     });
@@ -302,6 +312,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     t.classList.remove('active', 'bg-brand-yellow');
                     t.classList.add('bg-white');
                 });
+
+                if (typeof syncProfileSavedAddresses === 'function') {
+                    syncProfileSavedAddresses();
+                }
             }
 
             // Reset badge text back after 2.5s
@@ -971,6 +985,151 @@ document.addEventListener('DOMContentLoaded', () => {
         calendarNext.addEventListener('click', () => {
             currentDate.setMonth(currentDate.getMonth() + 1);
             renderCalendar();
+        });
+    }
+
+    // --- Profile Section Logic ---
+    function updateProfileCashAndWeight() {
+        const cards = document.querySelectorAll('#activity-cards-list .pickup-card');
+        let totalCash = 0;
+        let totalWeight = 0;
+
+        cards.forEach(card => {
+            const cardText = card.textContent;
+            const amtMatch = cardText.match(/₹([\d,]+)/);
+            if (amtMatch) {
+                totalCash += parseInt(amtMatch[1].replace(/,/g, ''), 10);
+            }
+
+            const wtMatch = cardText.match(/(?:Total )?Weight:\s*([\d.]+)\s*kg/i);
+            if (wtMatch) {
+                totalWeight += parseFloat(wtMatch[1]);
+            }
+        });
+
+        const cashElem = document.getElementById('profile-cash-amount');
+        const weightElem = document.getElementById('profile-weight-amount');
+        if (cashElem) {
+            cashElem.textContent = `₹${totalCash.toLocaleString('en-IN')}`;
+        }
+        if (weightElem) {
+            weightElem.textContent = `${totalWeight.toFixed(1)} kg sold`;
+        }
+    }
+
+    // Toggle Saved Addresses Accordion
+    const savedAddressesToggle = document.getElementById('profile-saved-addresses-toggle');
+    const savedAddressesList = document.getElementById('profile-saved-addresses-list');
+    const savedAddressesChevron = document.getElementById('profile-saved-chevron');
+
+    if (savedAddressesToggle && savedAddressesList) {
+        savedAddressesToggle.addEventListener('click', () => {
+            const isHidden = savedAddressesList.classList.contains('hidden');
+            if (isHidden) {
+                savedAddressesList.classList.remove('hidden');
+                if (savedAddressesChevron) savedAddressesChevron.classList.remove('-rotate-90');
+            } else {
+                savedAddressesList.classList.add('hidden');
+                if (savedAddressesChevron) savedAddressesChevron.classList.add('-rotate-90');
+            }
+        });
+    }
+
+    // Handle "Select" button on Saved Address Tags in Profile
+    function setupProfileAddressButtons() {
+        document.querySelectorAll('.profile-use-address-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const tag = btn.dataset.tag;
+                const lat = parseFloat(btn.dataset.lat);
+                const lng = parseFloat(btn.dataset.lng);
+                const address = btn.dataset.address;
+
+                // 1. Switch to Home page
+                const homeNavBtn = document.querySelector('.nav-btn[data-target="page-home"]');
+                if (homeNavBtn) homeNavBtn.click();
+
+                // 2. Select matching tag on Home page
+                document.querySelectorAll('.saved-address-tag').forEach(t => {
+                    if (t.dataset.tag === tag) {
+                        t.click();
+                    }
+                });
+
+                if (addressInput && address) {
+                    addressInput.value = address;
+                }
+                if (typeof marker !== 'undefined' && marker && !isNaN(lat) && !isNaN(lng)) {
+                    marker.setLatLng([lat, lng]);
+                    if (typeof map !== 'undefined' && map) {
+                        map.flyTo([lat, lng], 16, { duration: 0.8 });
+                    }
+                }
+            });
+        });
+    }
+
+    // Sync any new custom saved pin to Profile Saved Addresses list
+    function syncProfileSavedAddresses() {
+        const profileList = document.getElementById('profile-saved-addresses-list');
+        const countBadge = document.getElementById('profile-saved-count');
+        const homeTags = document.querySelectorAll('#saved-addresses-tags .saved-address-tag, #page-home .saved-address-tag');
+
+        if (countBadge) {
+            countBadge.textContent = `${homeTags.length} Tags`;
+        }
+
+        if (!profileList || homeTags.length === 0) return;
+
+        profileList.innerHTML = '';
+        const tagColors = {
+            home: { bg: 'bg-brand-yellow', icon: 'fa-house' },
+            office: { bg: 'bg-brand-blue', icon: 'fa-briefcase' },
+            parents: { bg: 'bg-brand-pink', icon: 'fa-heart' },
+            custom: { bg: 'bg-brand-green', icon: 'fa-bookmark' }
+        };
+
+        homeTags.forEach(t => {
+            const tagKey = t.dataset.tag || 'custom';
+            const colorInfo = tagColors[tagKey] || { bg: 'bg-brand-yellow', icon: 'fa-bookmark' };
+            const label = t.textContent.trim();
+            const address = t.dataset.address || 'Custom Pinned Address';
+            const lat = t.dataset.lat || '12.9352';
+            const lng = t.dataset.lng || '77.6245';
+
+            const item = document.createElement('div');
+            item.className = 'profile-address-item p-2.5 bg-brand-gray border-2 border-brand-black rounded-xl flex items-center justify-between gap-2 shadow-brutal-sm';
+            item.innerHTML = `
+                <div class="flex items-center gap-2 min-w-0">
+                    <span class="profile-tag-badge ${colorInfo.bg} text-brand-black text-[10px] font-black uppercase px-2 py-0.5 rounded-md border border-brand-black shrink-0 flex items-center gap-1 shadow-brutal-sm">
+                        <i class="fa-solid ${colorInfo.icon} text-[9px]"></i> ${label}
+                    </span>
+                    <p class="text-xs font-bold text-brand-black truncate">${address}</p>
+                </div>
+                <button type="button" class="profile-use-address-btn text-[10px] font-black uppercase bg-white hover:bg-brand-green text-brand-black px-2.5 py-1 rounded-md border border-brand-black shrink-0 shadow-brutal-sm transition-all" data-tag="${tagKey}" data-lat="${lat}" data-lng="${lng}" data-address="${address}">
+                    Select
+                </button>
+            `;
+            profileList.appendChild(item);
+        });
+
+        setupProfileAddressButtons();
+    }
+
+    // Initial setup for Profile
+    updateProfileCashAndWeight();
+    syncProfileSavedAddresses();
+    setupProfileAddressButtons();
+
+    // Log Out button
+    const logoutBtn = document.getElementById('profile-logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to log out of Kabadigo?')) {
+                alert('You have been logged out successfully.');
+                const homeNavBtn = document.querySelector('.nav-btn[data-target="page-home"]');
+                if (homeNavBtn) homeNavBtn.click();
+            }
         });
     }
 
