@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KabadiGo</title>
+    <script>
+        if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            green: 'var(--brand-green)',
+                            greenDark: 'var(--brand-greenDark)',
+                            black: 'var(--brand-black)',
+                            white: 'var(--brand-white)',
+                            gray: 'var(--brand-gray)',
+                            blue: 'var(--brand-blue)',
+                            pink: 'var(--brand-pink)',
+                            yellow: 'var(--brand-yellow)',
+                            purple: 'var(--brand-purple)',
+                            orange: 'var(--brand-orange)'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'brutal': '4px 4px 0px 0px var(--brand-black)',
+                        'brutal-sm': '2px 2px 0px 0px var(--brand-black)',
+                    }
+                }
+            }
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/profile.css">
+</head>
+<body class="bg-brand-gray transition-colors duration-500 h-screen flex justify-center items-center font-sans p-4">
+    
+    <!-- Mobile App Container (Neo-Brutalist) -->
+    <div class="bg-brand-white w-full max-w-md h-full md:h-[850px] relative overflow-hidden flex flex-col shadow-2xl md:rounded-3xl border-4 border-brand-black">
+        
+        <!-- Top Header (Persistent on every page) -->
+        <header class="bg-brand-white text-brand-black px-6 py-5 flex justify-between items-center z-10 sticky top-0 border-b-4 border-brand-black">
+            <h1 class="text-2xl font-black tracking-tighter uppercase">KabadiGo</h1>
+            <button id="theme-toggle" class="w-8 h-8 bg-brand-green text-brand-black border-2 border-brand-black rounded-full shadow-brutal-sm flex items-center justify-center transition-all active:translate-y-0.5 overflow-hidden relative">
+    <i class="fa-solid fa-sun absolute transition-transform duration-500 ease-in-out dark:translate-y-8"></i>
+    <i class="fa-solid fa-moon absolute transition-transform duration-500 ease-in-out -translate-y-8 dark:translate-y-0 text-brand-white"></i>
+</button>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 overflow-y-auto relative pb-32" id="app-content"> <!-- Added pb-32 for floating dock spacing -->
+            
+            <!-- 1. HOME PAGE -->
+            <section id="page-home" class="page-section active px-6 fade-in">
+                
+                <div class="mb-8 mt-6 home-stagger" style="--stagger: 0;">
+                    <h2 class="text-4xl font-black leading-tight text-brand-black mb-2 uppercase tracking-tighter">Schedule<br>a pickup</h2>
+                </div>
+                
+                <form id="booking-form" class="space-y-6">
+                    
+                    <!-- Map & Location Selector Container -->
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between home-stagger" style="--stagger: 1;">
+                            <label class="block text-sm font-black uppercase tracking-wider text-brand-black">Pickup Location</label>
+                            <span class="text-[10px] font-black uppercase tracking-widest bg-brand-yellow px-2.5 py-0.5 rounded-full border-2 border-brand-black shadow-brutal-sm flex items-center gap-1">
+                                <i class="fa-solid fa-location-crosshairs text-[10px]"></i> Tap map to drop pin
+                            </span>
+                        </div>
+
+                        <!-- Saved Addresses Tags (directly below PICKUP LOCATION, above the map) -->
+                        <div class="flex items-center gap-2 overflow-x-auto pb-1 pt-0.5 hide-scrollbar home-stagger" style="--stagger: 2;" id="saved-addresses-tags">
+                            <button type="button" class="saved-address-tag active flex items-center gap-1.5 px-3 py-1.5 rounded-xl border-2 border-brand-black bg-brand-yellow text-brand-black font-black text-xs uppercase shadow-brutal-sm active:translate-y-0.5 transition-all whitespace-nowrap cursor-pointer" data-tag="home" data-lat="12.9352" data-lng="77.6245" data-address="Flat 402, Green Glen Heights, Bengaluru">
+                                <i class="fa-solid fa-house text-xs"></i> Home
+                            </button>
+                            <button type="button" class="saved-address-tag flex items-center gap-1.5 px-3 py-1.5 rounded-xl border-2 border-brand-black bg-white text-brand-black font-black text-xs uppercase shadow-brutal-sm hover:bg-brand-gray active:translate-y-0.5 transition-all whitespace-nowrap cursor-pointer" data-tag="office" data-lat="12.9784" data-lng="77.6408" data-address="Indiranagar 100ft Rd, Bengaluru">
+                                <i class="fa-solid fa-briefcase text-xs"></i> Office
+                            </button>
+                            <button type="button" class="saved-address-tag flex items-center gap-1.5 px-3 py-1.5 rounded-xl border-2 border-brand-black bg-white text-brand-black font-black text-xs uppercase shadow-brutal-sm hover:bg-brand-gray active:translate-y-0.5 transition-all whitespace-nowrap cursor-pointer" data-tag="parents" data-lat="12.9121" data-lng="77.6446" data-address="Sector 2, HSR Layout, Bengaluru">
+                                <i class="fa-solid fa-heart text-xs"></i> Parents
+                            </button>
+                        </div>
+
+                        <!-- Map Card -->
+                        <div class="relative w-full h-[220px] rounded-2xl border-2 border-brand-black shadow-brutal overflow-hidden group bg-gray-100 home-stagger" style="--stagger: 3;">
+                            <div id="pickup-map" class="w-full h-full z-0"></div>
+
+                            <!-- Current location GPS button overlay -->
+                            <button type="button" id="locate-me-btn" class="absolute top-3 right-3 z-10 w-9 h-9 bg-white border-2 border-brand-black rounded-xl shadow-brutal-sm flex items-center justify-center text-brand-black hover:bg-brand-green active:translate-y-0.5 transition-all" title="Use current location">
+                                <i class="fa-solid fa-crosshairs text-sm"></i>
+                            </button>
+                        </div>
+
+                        <!-- Pickup Address Input with interactive Save Pin Button & Badge -->
+                        <div class="relative home-stagger" style="--stagger: 4;">
+                            <!-- Interactive Pin Icon Button -->
+                            <button type="button" id="save-pin-btn" class="absolute inset-y-0 left-2.5 my-auto w-8 h-8 rounded-lg border-2 border-brand-black bg-brand-yellow flex items-center justify-center text-brand-black shadow-brutal-sm hover:scale-110 active:scale-90 transition-all z-10 cursor-pointer group" title="Click to save this pin location">
+                                <i class="fa-solid fa-location-dot text-sm transition-transform group-hover:scale-110" id="pin-icon-inner"></i>
+                            </button>
+                            <input type="text" id="address" required class="w-full bg-brand-white px-4 py-3.5 pl-12 pr-28 rounded-xl border-2 border-brand-black shadow-brutal focus:ring-0 focus:translate-y-[2px] focus:translate-x-[2px] focus:shadow-brutal-sm transition-all outline-none text-brand-black font-bold placeholder-gray-400 text-xs sm:text-sm" placeholder="Pin drop or enter address..." value="Flat 402, Green Glen Heights, Bengaluru">
+                            <!-- Clickable Save Pin Badge -->
+                            <button type="button" id="save-pin-badge" class="absolute inset-y-0 right-2.5 my-auto h-8 flex items-center gap-1.5 text-[10px] font-black uppercase bg-brand-green hover:bg-brand-yellow border-2 border-brand-black px-2.5 rounded-lg shadow-brutal-sm active:translate-y-0.5 transition-all cursor-pointer z-10" title="Click to save address pin">
+                                <i class="fa-solid fa-thumbtack text-[10px]" id="pin-badge-icon"></i>
+                                <span id="pin-badge-text">Save Pin</span>
+                            </button>
+                        </div>
+
+                        <!-- Animated Saved Feedback Toast / Chip -->
+                        <div id="save-pin-toast" class="hidden flex items-center justify-center gap-2 bg-brand-green text-brand-black font-black text-xs uppercase py-2 px-3 rounded-xl border-2 border-brand-black shadow-brutal-sm transition-all">
+                            <i class="fa-solid fa-circle-check text-sm"></i>
+                            <span id="save-toast-text">📍 Location pinned & saved!</span>
+                        </div>
+                    </div>
+
+                    <!-- Waste Type Header -->
+                    <div class="home-stagger" style="--stagger: 5;">
+                        <label class="block text-sm font-black uppercase tracking-wider text-brand-black mb-2">Material Type</label>
+                    </div>
+
+                    <!-- Waste Type Buttons (Cascading 0.1s Apart) -->
+                    <div class="grid grid-cols-2 gap-4" id="waste-types">
+                        <!-- Metals -->
+                        <button type="button" class="waste-btn relative brutal-card bg-white text-brand-black border-2 border-brand-black shadow-brutal rounded-xl p-4 flex flex-col items-center text-center gap-2 home-stagger" style="--stagger: 6;" data-type="metals" data-color="bg-brand-blue">
+                            <div class="selected-badge hidden absolute top-2 right-2 w-5 h-5 bg-brand-black text-white rounded-full items-center justify-center text-[10px] border border-brand-black shadow-brutal-sm">
+                                <i class="fa-solid fa-check"></i>
+                            </div>
+                            <div class="w-12 h-12 bg-white border-2 border-brand-black rounded-full flex items-center justify-center mb-1 shadow-brutal-sm">
+                                <i class="fa-solid fa-gear text-2xl"></i>
+                            </div>
+                            <span class="font-black text-sm uppercase">Metals</span>
+                        </button>
+                        <!-- Plastic -->
+                        <button type="button" class="waste-btn relative brutal-card bg-white text-brand-black border-2 border-brand-black shadow-brutal rounded-xl p-4 flex flex-col items-center text-center gap-2 home-stagger" style="--stagger: 7;" data-type="plastic" data-color="bg-brand-pink">
+                            <div class="selected-badge hidden absolute top-2 right-2 w-5 h-5 bg-brand-black text-white rounded-full items-center justify-center text-[10px] border border-brand-black shadow-brutal-sm">
+                                <i class="fa-solid fa-check"></i>
+                            </div>
+                            <div class="w-12 h-12 bg-white border-2 border-brand-black rounded-full flex items-center justify-center mb-1 shadow-brutal-sm">
+                                <i class="fa-solid fa-bottle-water text-2xl"></i>
+                            </div>
+                            <span class="font-black text-sm uppercase">Plastic</span>
+                        </button>
+                        <!-- Clothes -->
+                        <button type="button" class="waste-btn relative brutal-card bg-white text-brand-black border-2 border-brand-black shadow-brutal rounded-xl p-4 flex flex-col items-center text-center gap-2 home-stagger" style="--stagger: 8;" data-type="clothes" data-color="bg-brand-yellow">
+                            <div class="selected-badge hidden absolute top-2 right-2 w-5 h-5 bg-brand-black text-white rounded-full items-center justify-center text-[10px] border border-brand-black shadow-brutal-sm">
+                                <i class="fa-solid fa-check"></i>
+                            </div>
+                            <div class="w-12 h-12 bg-white border-2 border-brand-black rounded-full flex items-center justify-center mb-1 shadow-brutal-sm">
+                                <svg class="w-6 h-6 text-brand-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 8.5V7a2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 0-2.5-2.5 2.5 2.5 0 0 0-2.5 2.5"/>
+                                    <path d="M2.5 16.5 12 8.5l9.5 8a1.5 1.5 0 0 1-1 2.5H3.5a1.5 1.5 0 0 1-1-2.5z"/>
+                                </svg>
+                            </div>
+                            <span class="font-black text-sm uppercase">Clothes</span>
+                        </button>
+                        <!-- Paper -->
+                        <button type="button" class="waste-btn relative brutal-card bg-white text-brand-black border-2 border-brand-black shadow-brutal rounded-xl p-4 flex flex-col items-center text-center gap-2 home-stagger" style="--stagger: 9;" data-type="paper" data-color="bg-brand-green">
+                            <div class="selected-badge hidden absolute top-2 right-2 w-5 h-5 bg-brand-black text-white rounded-full items-center justify-center text-[10px] border border-brand-black shadow-brutal-sm">
+                                <i class="fa-solid fa-check"></i>
+                            </div>
+                            <div class="w-12 h-12 bg-white border-2 border-brand-black rounded-full flex items-center justify-center mb-1 shadow-brutal-sm">
+                                <i class="fa-solid fa-file-lines text-2xl"></i>
+                            </div>
+                            <span class="font-black text-sm uppercase">Paper</span>
+                        </button>
+                        <!-- E-Waste -->
+                        <button type="button" class="waste-btn relative brutal-card bg-white text-brand-black border-2 border-brand-black shadow-brutal rounded-xl p-4 flex flex-col items-center text-center gap-2 home-stagger" style="--stagger: 10;" data-type="ewaste" data-color="bg-brand-purple">
+                            <div class="selected-badge hidden absolute top-2 right-2 w-5 h-5 bg-brand-black text-white rounded-full items-center justify-center text-[10px] border border-brand-black shadow-brutal-sm">
+                                <i class="fa-solid fa-check"></i>
+                            </div>
+                            <div class="w-12 h-12 bg-white border-2 border-brand-black rounded-full flex items-center justify-center mb-1 shadow-brutal-sm">
+                                <i class="fa-solid fa-laptop text-2xl"></i>
+                            </div>
+                            <span class="font-black text-sm uppercase">E-Waste</span>
+                        </button>
+                        <!-- Other Items -->
+                        <button type="button" class="waste-btn relative brutal-card bg-white text-brand-black border-2 border-brand-black shadow-brutal rounded-xl p-4 flex flex-col items-center text-center gap-2 home-stagger" style="--stagger: 11;" data-type="other" data-color="bg-brand-orange">
+                            <div class="selected-badge hidden absolute top-2 right-2 w-5 h-5 bg-brand-black text-white rounded-full items-center justify-center text-[10px] border border-brand-black shadow-brutal-sm">
+                                <i class="fa-solid fa-check"></i>
+                            </div>
+                            <div class="w-12 h-12 bg-white border-2 border-brand-black rounded-full flex items-center justify-center mb-1 shadow-brutal-sm">
+                                <i class="fa-solid fa-box-open text-2xl"></i>
+                            </div>
+                            <span class="font-black text-sm uppercase">Other</span>
+                        </button>
+                    </div>
+                    <input type="hidden" id="selected-waste" value="">
+
+                    <!-- Action Button -->
+                    <div class="pt-6 home-stagger" style="--stagger: 12;">
+                        <button id="book-btn" class="w-full bg-brand-green text-brand-black border-2 border-brand-black font-black uppercase tracking-widest py-4 rounded-xl shadow-brutal brutal-card flex justify-center items-center gap-2">
+                            Request Pickup <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- 2. SERVICES PAGE -->
+            <section id="page-services" class="page-section hidden px-6 fade-in">
+                <div class="mb-8 mt-6">
+                    <h2 class="text-4xl font-black leading-tight text-brand-black mb-2 uppercase tracking-tighter">Services<br>& Pricing</h2>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Metals -->
+                    <div class="card-wrapper relative z-10 w-full h-[185px]">
+                        <div class="tilt-card w-full h-full bg-brand-blue border-2 border-brand-black shadow-brutal rounded-2xl p-4 flex items-center justify-center">
+                            <div class="card-main flex flex-col items-center text-center justify-center">
+                                <div class="w-12 h-12 bg-white border-2 border-brand-black rounded-full flex items-center justify-center mb-1 shadow-brutal-sm">
+                                    <i class="fa-solid fa-gear text-xl text-brand-black"></i>
+                                </div>
+                                <p class="font-black text-brand-black text-sm uppercase">Metals</p>
+                                <p class="text-[10px] text-brand-black opacity-70 font-bold mb-2">Iron, Aluminum</p>
+                                <p class="font-black text-brand-white bg-brand-black px-3 py-1 rounded-full text-xs border-2 border-brand-black shadow-brutal-sm">₹25/kg</p>
+                            </div>
+                            <div class="card-details text-left">
+                                <div class="w-[200px] shrink-0 border-l-2 border-brand-black pl-4 py-1">
+                                    <span class="text-[9px] font-black uppercase tracking-wider text-brand-black opacity-70 block">Accepted Items</span>
+                                    <p class="text-xs font-bold text-brand-black leading-snug mt-1">Clean iron, aluminum cans, copper wires & steel scraps. Rate varies by market purity.</p>
+                                    <button type="button" class="tap-to-scrap-btn mt-2 inline-flex items-center gap-1.5 bg-brand-black text-white text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-lg border-2 border-brand-black shadow-brutal-sm hover:translate-y-[-1px] active:translate-y-[1px] transition-all" data-scrap-type="metals">
+                                        Tap to Scrap <i class="fa-solid fa-arrow-right text-[9px]"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Plastic -->
+                    <div class="card-wrapper relative z-10 w-full h-[185px]">
+                        <div class="tilt-card w-full h-full bg-brand-pink border-2 border-brand-black shadow-brutal rounded-2xl p-4 flex items-center justify-center">
+                            <div class="card-main flex flex-col items-center text-center justify-center">
+                                <div class="w-12 h-12 bg-white border-2 border-brand-black rounded-full flex items-center justify-center mb-1 shadow-brutal-sm">
+                                    <i class="fa-solid fa-bottle-water text-xl text-brand-black"></i>
+                                </div>
+                                <p class="font-black text-brand-black text-sm uppercase">Plastic</p>
+                                <p class="text-[10px] text-brand-black opacity-70 font-bold mb-2">Bottles, jars</p>
+                                <p class="font-black text-brand-white bg-brand-black px-3 py-1 rounded-full text-xs border-2 border-brand-black shadow-brutal-sm">₹10/kg</p>
+                            </div>
+                            <div class="card-details text-left">
+                                <div class="w-[200px] shrink-0 border-r-2 border-brand-black pr-4 py-1">
+                                    <span class="text-[9px] font-black uppercase tracking-wider text-brand-black opacity-70 block">Accepted Items</span>
+                                    <p class="text-xs font-bold text-brand-black leading-snug mt-1">PET bottles, HDPE containers, and hard rigid plastics. Must be rinsed clean.</p>
+                                    <button type="button" class="tap-to-scrap-btn mt-2 inline-flex items-center gap-1.5 bg-brand-black text-white text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-lg border-2 border-brand-black shadow-brutal-sm hover:translate-y-[-1px] active:translate-y-[1px] transition-all" data-scrap-type="plastic">
+                                        Tap to Scrap <i class="fa-solid fa-arrow-right text-[9px]"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Clothes -->
+                    <div class="card-wrapper relative z-10 w-full h-[185px]">
+                        <div class="tilt-card w-full h-full bg-brand-yellow border-2 border-brand-black shadow-brutal rounded-2xl p-4 flex items-center justify-center">
+                            <div class="card-main flex flex-col items-center text-center justify-center">
+                                <div class="w-12 h-12 bg-white border-2 border-brand-black rounded-full flex items-center justify-center mb-1 shadow-brutal-sm">
+                                    <svg class="w-6 h-6 text-brand-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M12 8.5V7a2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 0-2.5-2.5 2.5 2.5 0 0 0-2.5 2.5"/>
+                                        <path d="M2.5 16.5 12 8.5l9.5 8a1.5 1.5 0 0 1-1 2.5H3.5a1.5 1.5 0 0 1-1-2.5z"/>
+                                    </svg>
+                                </div>
+                                <p class="font-black text-brand-black text-sm uppercase">Clothes</p>
+                                <p class="text-[10px] text-brand-black opacity-70 font-bold mb-2">Shirts, textiles</p>
+                                <p class="font-black text-brand-white bg-brand-black px-3 py-1 rounded-full text-xs border-2 border-brand-black shadow-brutal-sm">₹5/kg</p>
+                            </div>
+                            <div class="card-details text-left">
+                                <div class="w-[200px] shrink-0 border-l-2 border-brand-black pl-4 py-1">
+                                    <span class="text-[9px] font-black uppercase tracking-wider text-brand-black opacity-70 block">Accepted Items</span>
+                                    <p class="text-xs font-bold text-brand-black leading-snug mt-1">Wearable shirts, pants, curtains and dry clean textiles. No soiled or wet cloth.</p>
+                                    <button type="button" class="tap-to-scrap-btn mt-2 inline-flex items-center gap-1.5 bg-brand-black text-white text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-lg border-2 border-brand-black shadow-brutal-sm hover:translate-y-[-1px] active:translate-y-[1px] transition-all" data-scrap-type="clothes">
+                                        Tap to Scrap <i class="fa-solid fa-arrow-right text-[9px]"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Paper -->
+                    <div class="card-wrapper relative z-10 w-full h-[185px]">
+                        <div class="tilt-card w-full h-full bg-brand-green border-2 border-brand-black shadow-brutal rounded-2xl p-4 flex items-center justify-center">
+                            <div class="card-main flex flex-col items-center text-center justify-center">
+                                <div class="w-12 h-12 bg-white border-2 border-brand-black rounded-full flex items-center justify-center mb-1 shadow-brutal-sm">
+                                    <i class="fa-solid fa-file-lines text-xl text-brand-black"></i>
+                                </div>
+                                <p class="font-black text-brand-black text-sm uppercase">Paper</p>
+                                <p class="text-[10px] text-brand-black opacity-70 font-bold mb-2">Books, paper</p>
+                                <p class="font-black text-brand-white bg-brand-black px-3 py-1 rounded-full text-xs border-2 border-brand-black shadow-brutal-sm">₹12/kg</p>
+                            </div>
+                            <div class="card-details text-left">
+                                <div class="w-[200px] shrink-0 border-r-2 border-brand-black pr-4 py-1">
+                                    <span class="text-[9px] font-black uppercase tracking-wider text-brand-black opacity-70 block">Accepted Items</span>
+                                    <p class="text-xs font-bold text-brand-black leading-snug mt-1">Old newspapers, notebooks, corrugated cardboard boxes & office print sheets.</p>
+                                    <button type="button" class="tap-to-scrap-btn mt-2 inline-flex items-center gap-1.5 bg-brand-black text-white text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-lg border-2 border-brand-black shadow-brutal-sm hover:translate-y-[-1px] active:translate-y-[1px] transition-all" data-scrap-type="paper">
+                                        Tap to Scrap <i class="fa-solid fa-arrow-right text-[9px]"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- E-Waste -->
+                    <div class="card-wrapper relative z-10 w-full h-[185px]">
+                        <div class="tilt-card w-full h-full bg-brand-purple border-2 border-brand-black shadow-brutal rounded-2xl p-4 flex items-center justify-center">
+                            <div class="card-main flex flex-col items-center text-center justify-center">
+                                <div class="w-12 h-12 bg-white border-2 border-brand-black rounded-full flex items-center justify-center mb-1 shadow-brutal-sm">
+                                    <i class="fa-solid fa-laptop text-xl text-brand-black"></i>
+                                </div>
+                                <p class="font-black text-brand-black text-sm uppercase">E-Waste</p>
+                                <p class="text-[10px] text-brand-black opacity-70 font-bold mb-2">Laptops, phones</p>
+                                <p class="font-black text-brand-white bg-brand-black px-3 py-1 rounded-full text-xs border-2 border-brand-black shadow-brutal-sm">Var.</p>
+                            </div>
+                            <div class="card-details text-left">
+                                <div class="w-[200px] shrink-0 border-l-2 border-brand-black pl-4 py-1">
+                                    <span class="text-[9px] font-black uppercase tracking-wider text-brand-black opacity-70 block">Accepted Items</span>
+                                    <p class="text-xs font-bold text-brand-black leading-snug mt-1">Evaluated on spot. Old smartphones, laptops, cables, PCBs & dry cell batteries.</p>
+                                    <button type="button" class="tap-to-scrap-btn mt-2 inline-flex items-center gap-1.5 bg-brand-black text-white text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-lg border-2 border-brand-black shadow-brutal-sm hover:translate-y-[-1px] active:translate-y-[1px] transition-all" data-scrap-type="ewaste">
+                                        Tap to Scrap <i class="fa-solid fa-arrow-right text-[9px]"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Other Items -->
+                    <div class="card-wrapper relative z-10 w-full h-[185px]">
+                        <div class="tilt-card w-full h-full bg-brand-orange border-2 border-brand-black shadow-brutal rounded-2xl p-4 flex items-center justify-center">
+                            <div class="card-main flex flex-col items-center text-center justify-center">
+                                <div class="w-12 h-12 bg-white border-2 border-brand-black rounded-full flex items-center justify-center mb-1 shadow-brutal-sm">
+                                    <i class="fa-solid fa-box-open text-xl text-brand-black"></i>
+                                </div>
+                                <p class="font-black text-brand-black text-sm uppercase">Other</p>
+                                <p class="text-[10px] text-brand-black opacity-70 font-bold mb-2">Mixed materials</p>
+                                <p class="font-black text-brand-white bg-brand-black px-3 py-1 rounded-full text-xs border-2 border-brand-black shadow-brutal-sm">Var.</p>
+                            </div>
+                            <div class="card-details text-left">
+                                <div class="w-[200px] shrink-0 border-r-2 border-brand-black pr-4 py-1">
+                                    <span class="text-[9px] font-black uppercase tracking-wider text-brand-black opacity-70 block">Accepted Items</span>
+                                    <p class="text-xs font-bold text-brand-black leading-snug mt-1">Mixed household scrap, beer bottles, appliances. Collector quotes spot price.</p>
+                                    <button type="button" class="tap-to-scrap-btn mt-2 inline-flex items-center gap-1.5 bg-brand-black text-white text-[10px] font-black uppercase tracking-wider px-3 py-1.5 rounded-lg border-2 border-brand-black shadow-brutal-sm hover:translate-y-[-1px] active:translate-y-[1px] transition-all" data-scrap-type="other">
+                                        Tap to Scrap <i class="fa-solid fa-arrow-right text-[9px]"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. ACTIVITY PAGE -->
+            <section id="page-activity" class="page-section hidden px-6 fade-in">
+                <!-- Sticky Portion: Title, Search Bar & Filter Tags -->
+                <div class="sticky top-0 bg-brand-white z-20 pt-6 pb-2 -mx-6 px-6 border-b-2 border-brand-black">
+                    <div class="mb-4">
+                        <h2 class="text-4xl font-black leading-tight text-brand-black mb-1 uppercase tracking-tighter">Activity</h2>
+                    </div>
+
+                    <!-- Search Bar -->
+                    <div class="mb-4 flex gap-3">
+                        <div class="relative flex-grow">
+                            <div class="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                                <i class="fa-solid fa-magnifying-glass text-brand-black"></i>
+                            </div>
+                            <input type="text" id="activity-search" class="w-full bg-white px-4 py-3 pl-12 rounded-xl border-2 border-brand-black shadow-brutal focus:ring-0 focus:translate-y-[2px] focus:translate-x-[2px] focus:shadow-brutal-sm transition-all outline-none text-brand-black font-bold placeholder-gray-400" placeholder="Search pickups...">
+                        </div>
+                        <button id="calendar-btn" class="relative shrink-0 w-[52px] h-[52px] brutal-card bg-brand-yellow rounded-xl border-2 border-brand-black shadow-brutal flex items-center justify-center active:translate-y-1">
+                            <i class="fa-solid fa-calendar-days text-xl text-brand-black"></i>
+                        </button>
+                    </div>
+
+                    <!-- Filter Tags -->
+                    <div class="flex gap-3 overflow-x-auto pb-2 -mx-6 px-6 hide-scrollbar" id="activity-filters">
+                        
+                        <button class="filter-tag shrink-0 flex items-center gap-2 bg-brand-black text-white border-2 border-brand-black px-4 py-2 rounded-full font-black text-xs uppercase tracking-wider shadow-brutal-sm transition-all duration-300" data-category="all" data-color="bg-brand-black">
+                            All
+                        </button>
+                        
+                        <button class="filter-tag shrink-0 flex items-center gap-2 bg-white text-brand-black border-2 border-brand-black shadow-brutal-sm px-4 py-2 rounded-full font-black text-xs uppercase tracking-wider transition-all duration-300" data-category="metals" data-color="bg-brand-blue">
+                            <span class="rounded-full bg-brand-blue border-brand-black transition-all duration-300 w-3 h-3 border-2 opacity-100"></span>
+                            Metals
+                        </button>
+                        
+                        <button class="filter-tag shrink-0 flex items-center gap-2 bg-white text-brand-black border-2 border-brand-black shadow-brutal-sm px-4 py-2 rounded-full font-black text-xs uppercase tracking-wider transition-all duration-300" data-category="plastic" data-color="bg-brand-pink">
+                            <span class="rounded-full bg-brand-pink border-brand-black transition-all duration-300 w-3 h-3 border-2 opacity-100"></span>
+                            Plastic
+                        </button>
+                        
+                        <button class="filter-tag shrink-0 flex items-center gap-2 bg-white text-brand-black border-2 border-brand-black shadow-brutal-sm px-4 py-2 rounded-full font-black text-xs uppercase tracking-wider transition-all duration-300" data-category="clothes" data-color="bg-brand-yellow">
+                            <span class="rounded-full bg-brand-yellow border-brand-black transition-all duration-300 w-3 h-3 border-2 opacity-100"></span>
+                            Clothes
+                        </button>
+
+                        <button class="filter-tag shrink-0 flex items-center gap-2 bg-white text-brand-black border-2 border-brand-black shadow-brutal-sm px-4 py-2 rounded-full font-black text-xs uppercase tracking-wider transition-all duration-300" data-category="paper" data-color="bg-brand-green">
+                            <span class="rounded-full bg-brand-green border-brand-black transition-all duration-300 w-3 h-3 border-2 opacity-100"></span>
+                            Paper
+                        </button>
+                        
+                        <button class="filter-tag shrink-0 flex items-center gap-2 bg-white text-brand-black border-2 border-brand-black shadow-brutal-sm px-4 py-2 rounded-full font-black text-xs uppercase tracking-wider transition-all duration-300" data-category="ewaste" data-color="bg-brand-purple">
+                            <span class="rounded-full bg-brand-purple border-brand-black transition-all duration-300 w-3 h-3 border-2 opacity-100"></span>
+                            E-Waste
+                        </button>
+
+                        <button class="filter-tag shrink-0 flex items-center gap-2 bg-white text-brand-black border-2 border-brand-black shadow-brutal-sm px-4 py-2 rounded-full font-black text-xs uppercase tracking-wider transition-all duration-300" data-category="other" data-color="bg-brand-orange">
+                            <span class="rounded-full bg-brand-orange border-brand-black transition-all duration-300 w-3 h-3 border-2 opacity-100"></span>
+                            Other
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Scrollable Extended Cards Feed (10 Cards Total) -->
+                <div class="space-y-4 pt-4" id="activity-cards-list">
+                    <!-- Pickup Card 1 -->
+                    <div class="pickup-card brutal-card expand-card bg-white border-2 border-brand-black shadow-brutal p-5 rounded-xl" data-categories="clothes paper" data-date="2026-09-07">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <span class="bg-brand-green border-2 border-brand-black text-brand-black text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-md shadow-brutal-sm">Completed</span>
+                                <p class="font-black mt-3">Yesterday, 4:30 PM</p>
+                            </div>
+                            <p class="font-black text-xl bg-brand-yellow px-3 py-1 rounded-lg border-2 border-brand-black shadow-brutal-sm">₹120</p>
+                        </div>
+                        <!-- Tags -->
+                        <div class="flex flex-wrap gap-2 mt-4 pt-4 border-t-2 border-brand-gray">
+                            <div class="flex items-center gap-1.5 bg-brand-yellow border-2 border-brand-black px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wide shadow-brutal-sm">
+                                <svg class="w-3.5 h-3.5 text-brand-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 8.5V7a2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 0-2.5-2.5 2.5 2.5 0 0 0-2.5 2.5"/>
+                                    <path d="M2.5 16.5 12 8.5l9.5 8a1.5 1.5 0 0 1-1 2.5H3.5a1.5 1.5 0 0 1-1-2.5z"/>
+                                </svg> Clothes
+                            </div>
+                            <div class="flex items-center gap-1.5 bg-brand-green border-2 border-brand-black px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wide shadow-brutal-sm">
+                                <i class="fa-solid fa-file-lines"></i> Paper
+                            </div>
+                        </div>
+                        <!-- Details Section -->
+                        <div class="details-section mt-4 pt-4 border-t-2 border-brand-black border-dashed">
+                            <div class="flex justify-between text-xs font-bold mb-2">
+                                <span class="text-gray-500">Total Weight:</span>
+                                <span>24 kg</span>
+                            </div>
+                            <!-- Material Breakdown -->
+                            <div class="bg-gray-50 border border-brand-black/20 rounded-lg p-2 mb-2 text-xs">
+                                <div class="flex justify-between font-bold py-0.5">
+                                    <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-brand-yellow border border-brand-black"></span> Clothes:</span>
+                                    <span>14 kg</span>
+                                </div>
+                                <div class="flex justify-between font-bold py-0.5">
+                                    <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-brand-green border border-brand-black"></span> Paper:</span>
+                                    <span>10 kg</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between text-xs font-bold mb-2">
+                                <span class="text-gray-500">Collected by:</span>
+                                <span>Raju Bhai</span>
+                            </div>
+                            <div class="flex justify-between text-xs font-bold">
+                                <span class="text-gray-500">Payment:</span>
+                                <span>UPI</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pickup Card 2 -->
+                    <div class="pickup-card brutal-card expand-card bg-white border-2 border-brand-black shadow-brutal p-5 rounded-xl" data-categories="metals plastic" data-date="2026-08-28">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <span class="bg-brand-green border-2 border-brand-black text-brand-black text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-md shadow-brutal-sm">Completed</span>
+                                <p class="font-black mt-3">Aug 28, 10:00 AM</p>
+                            </div>
+                            <p class="font-black text-xl bg-brand-pink px-3 py-1 rounded-lg border-2 border-brand-black shadow-brutal-sm">₹45</p>
+                        </div>
+                        <!-- Tags -->
+                        <div class="flex flex-wrap gap-2 mt-4 pt-4 border-t-2 border-brand-gray">
+                            <div class="flex items-center gap-1.5 bg-brand-blue border-2 border-brand-black px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wide shadow-brutal-sm">
+                                <i class="fa-solid fa-gear"></i> Metals
+                            </div>
+                            <div class="flex items-center gap-1.5 bg-brand-pink border-2 border-brand-black px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wide shadow-brutal-sm">
+                                <i class="fa-solid fa-bottle-water"></i> Plastics
+                            </div>
+                        </div>
+                        <!-- Details Section -->
+                        <div class="details-section mt-4 pt-4 border-t-2 border-brand-black border-dashed">
+                            <div class="flex justify-between text-xs font-bold mb-2">
+                                <span class="text-gray-500">Total Weight:</span>
+                                <span>4.5 kg</span>
+                            </div>
+                            <!-- Material Breakdown -->
+                            <div class="bg-gray-50 border border-brand-black/20 rounded-lg p-2 mb-2 text-xs">
+                                <div class="flex justify-between font-bold py-0.5">
+                                    <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-brand-blue border border-brand-black"></span> Metals:</span>
+                                    <span>2.0 kg</span>
+                                </div>
+                                <div class="flex justify-between font-bold py-0.5">
+                                    <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-brand-pink border border-brand-black"></span> Plastics:</span>
+                                    <span>2.5 kg</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between text-xs font-bold mb-2">
+                                <span class="text-gray-500">Collected by:</span>
+                                <span>Raju Bhai</span>
+                            </div>
+                            <div class="flex justify-between text-xs font-bold">
+                                <span class="text-gray-500">Payment:</span>
+                                <span>Cash</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pickup Card 3 -->
+                    <div class="pickup-card brutal-card expand-card bg-white border-2 border-brand-black shadow-brutal p-5 rounded-xl" data-categories="ewaste" data-date="2026-08-15">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <span class="bg-brand-green border-2 border-brand-black text-brand-black text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-md shadow-brutal-sm">Completed</span>
+                                <p class="font-black mt-3">Aug 15, 11:15 AM</p>
+                            </div>
+                            <p class="font-black text-xl bg-brand-purple px-3 py-1 rounded-lg border-2 border-brand-black shadow-brutal-sm">₹380</p>
+                        </div>
+                        <!-- Tags -->
+                        <div class="flex flex-wrap gap-2 mt-4 pt-4 border-t-2 border-brand-gray">
+                            <div class="flex items-center gap-1.5 bg-brand-purple border-2 border-brand-black px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wide shadow-brutal-sm">
+                                <i class="fa-solid fa-laptop"></i> E-Waste
+                            </div>
+                        </div>
+                        <!-- Details Section -->
+                        <div class="details-section mt-4 pt-4 border-t-2 border-brand-black border-dashed">
+                            <div class="flex justify-between text-xs font-bold mb-2">
+                                <span class="text-gray-500">Weight:</span>
+                                <span>8.2 kg</span>
+                            </div>
+                            <div class="flex justify-between text-xs font-bold mb-2">
+                                <span class="text-gray-500">Collected by:</span>
+                                <span>Suresh Kabadiwala</span>
+                            </div>
+                            <div class="flex justify-between text-xs font-bold">
+                                <span class="text-gray-500">Payment:</span>
+                                <span>UPI</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pickup Card 4 -->
+                    <div class="pickup-card brutal-card expand-card bg-white border-2 border-brand-black shadow-brutal p-5 rounded-xl" data-categories="metals" data-date="2026-08-04">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <span class="bg-brand-green border-2 border-brand-black text-brand-black text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-md shadow-brutal-sm">Completed</span>
+                                <p class="font-black mt-3">Aug 04, 02:20 PM</p>
+                            </div>
+                            <p class="font-black text-xl bg-brand-blue px-3 py-1 rounded-lg border-2 border-brand-black shadow-brutal-sm">₹560</p>
+                        </div>
+                        <!-- Tags -->
+                        <div class="flex flex-wrap gap-2 mt-4 pt-4 border-t-2 border-brand-gray">
+                            <div class="flex items-center gap-1.5 bg-brand-blue border-2 border-brand-black px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wide shadow-brutal-sm">
+                                <i class="fa-solid fa-gear"></i> Metals
+                            </div>
+                        </div>
+                        <!-- Details Section -->
+                        <div class="details-section mt-4 pt-4 border-t-2 border-brand-black border-dashed">
+                            <div class="flex justify-between text-xs font-bold mb-2">
+                                <span class="text-gray-500">Weight:</span>
+                                <span>18 kg (Iron scrap, rod ends)</span>
+                            </div>
+                            <div class="flex justify-between text-xs font-bold mb-2">
+                                <span class="text-gray-500">Collected by:</span>
+                                <span>Raju Bhai</span>
+                            </div>
+                            <div class="flex justify-between text-xs font-bold">
+                                <span class="text-gray-500">Payment:</span>
+                                <span>UPI</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pickup Card 5 -->
+                    <div class="pickup-card brutal-card expand-card bg-white border-2 border-brand-black shadow-brutal p-5 rounded-xl" data-categories="paper plastic" data-date="2026-07-28">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <span class="bg-brand-green border-2 border-brand-black text-brand-black text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-md shadow-brutal-sm">Completed</span>
+                                <p class="font-black mt-3">Jul 28, 05:45 PM</p>
+                            </div>
+                            <p class="font-black text-xl bg-brand-green px-3 py-1 rounded-lg border-2 border-brand-black shadow-brutal-sm">₹210</p>
+                        </div>
+                        <!-- Tags -->
+                        <div class="flex flex-wrap gap-2 mt-4 pt-4 border-t-2 border-brand-gray">
+                            <div class="flex items-center gap-1.5 bg-brand-green border-2 border-brand-black px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wide shadow-brutal-sm">
+                                <i class="fa-solid fa-file-lines"></i> Paper
+                            </div>
+                            <div class="flex items-center gap-1.5 bg-brand-pink border-2 border-brand-black px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wide shadow-brutal-sm">
+                                <i class="fa-solid fa-bottle-water"></i> Plastics
+                            </div>
+                        </div>
+                        <!-- Details Section -->
+                        <div class="details-section mt-4 pt-4 border-t-2 border-brand-black border-dashed">
+                            <div class="flex justify-between text-xs font-bold mb-2">
+                                <span class="text-gray-500">Total Weight:</span>
+                                <span>15 kg</span>
+                            </div>
+                            <!-- Material Breakdown -->
+                            <div class="bg-gray-50 border border-brand-black/20 rounded-lg p-2 mb-2 text-xs">
+                                <div class="flex justify-between font-bold py-0.5">
+                                    <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-brand-green border border-brand-black"></span> Paper:</span>
+                                    <span>11 kg (Cartons & books)</span>
+                                </div>
+                                <div class="flex justify-between font-bold py-0.5">
+                                    <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-brand-pink border border-brand-black"></span> Plastics:</span>
+                                    <span>4 kg (Water bottles)</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between text-xs font-bold mb-2">
+                                <span class="text-gray-500">Collected by:</span>
+                                <span>Manoj Scrap Center</span>
+                            </div>
+                            <div class="flex justify-between text-xs font-bold">
+                                <span class="text-gray-500">Payment:</span>
+                                <span>Cash</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pickup Card 6 -->
+                    <div class="pickup-card brutal-card expand-card bg-white border-2 border-brand-black shadow-brutal p-5 rounded-xl" data-categories="clothes" data-date="2026-07-16">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <span class="bg-brand-green border-2 border-brand-black text-brand-black text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-md shadow-brutal-sm">Completed</span>
+                                <p class="font-black mt-3">Jul 16, 12:30 PM</p>
+                            </div>
+                            <p class="font-black text-xl bg-brand-yellow px-3 py-1 rounded-lg border-2 border-brand-black shadow-brutal-sm">₹75</p>
+                        </div>
+                        <!-- Tags -->
+                        <div class="flex flex-wrap gap-2 mt-4 pt-4 border-t-2 border-brand-gray">
+                            <div class="flex items-center gap-1.5 bg-brand-yellow border-2 border-brand-black px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wide shadow-brutal-sm">
+                                <svg class="w-3.5 h-3.5 text-brand-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 8.5V7a2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 0-2.5-2.5 2.5 2.5 0 0 0-2.5 2.5"/>
+                                    <path d="M2.5 16.5 12 8.5l9.5 8a1.5 1.5 0 0 1-1 2.5H3.5a1.5 1.5 0 0 1-1-2.5z"/>
+                                </svg> Clothes
+                            </div>
+                        </div>
+                        <!-- Details Section -->
+                        <div class="details-section mt-4 pt-4 border-t-2 border-brand-black border-dashed">
+                            <div class="flex justify-between text-xs font-bold mb-2">
+                                <span class="text-gray-500">Weight:</span>
+                                <span>15 kg (Old curtains & bedsheets)</span>
+                            </div>
+                            <div class="flex justify-between text-xs font-bold mb-2">
+                                <span class="text-gray-500">Collected by:</span>
+                                <span>Raju Bhai</span>
+                            </div>
+                            <div class="flex justify-between text-xs font-bold">
+                                <span class="text-gray-500">Payment:</span>
+                                <span>UPI</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pickup Card 7 -->
+                    <div class="pickup-card brutal-card expand-card bg-white border-2 border-brand-black shadow-brutal p-5 rounded-xl" data-categories="other ewaste" data-date="2026-07-02">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <span class="bg-brand-green border-2 border-brand-black text-brand-black text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-md shadow-brutal-sm">Completed</span>
+                                <p class="font-black mt-3">Jul 02, 09:10 AM</p>
+                            </div>
+                            <p class="font-black text-xl bg-brand-orange px-3 py-1 rounded-lg border-2 border-brand-black shadow-brutal-sm">₹250</p>
+                        </div>
+                        <!-- Tags -->
+                        <div class="flex flex-wrap gap-2 mt-4 pt-4 border-t-2 border-brand-gray">
+                            <div class="flex items-center gap-1.5 bg-brand-orange border-2 border-brand-black px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wide shadow-brutal-sm">
+                                <i class="fa-solid fa-box-open"></i> Other
+                            </div>
+                            <div class="flex items-center gap-1.5 bg-brand-purple border-2 border-brand-black px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wide shadow-brutal-sm">
+                                <i class="fa-solid fa-laptop"></i> E-Waste
+                            </div>
+                        </div>
+                        <!-- Details Section -->
+                        <div class="details-section mt-4 pt-4 border-t-2 border-brand-black border-dashed">
+                            <div class="flex justify-between text-xs font-bold mb-2">
+                                <span class="text-gray-500">Total Weight:</span>
+                                <span>14 kg</span>
+                            </div>
+                            <!-- Material Breakdown -->
+                            <div class="bg-gray-50 border border-brand-black/20 rounded-lg p-2 mb-2 text-xs">
+                                <div class="flex justify-between font-bold py-0.5">
+                                    <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-brand-orange border border-brand-black"></span> Other:</span>
+                                    <span>9 kg (Old microwave shell)</span>
+                                </div>
+                                <div class="flex justify-between font-bold py-0.5">
+                                    <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-brand-purple border border-brand-black"></span> E-Waste:</span>
+                                    <span>5 kg (Copper wires & motor)</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between text-xs font-bold mb-2">
+                                <span class="text-gray-500">Collected by:</span>
+                                <span>Suresh Kabadiwala</span>
+                            </div>
+                            <div class="flex justify-between text-xs font-bold">
+                                <span class="text-gray-500">Payment:</span>
+                                <span>UPI</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pickup Card 8 -->
+                    <div class="pickup-card brutal-card expand-card bg-white border-2 border-brand-black shadow-brutal p-5 rounded-xl" data-categories="paper" data-date="2026-06-18">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <span class="bg-brand-green border-2 border-brand-black text-brand-black text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-md shadow-brutal-sm">Completed</span>
+                                <p class="font-black mt-3">Jun 18, 04:00 PM</p>
+                            </div>
+                            <p class="font-black text-xl bg-brand-green px-3 py-1 rounded-lg border-2 border-brand-black shadow-brutal-sm">₹190</p>
+                        </div>
+                        <!-- Tags -->
+                        <div class="flex flex-wrap gap-2 mt-4 pt-4 border-t-2 border-brand-gray">
+                            <div class="flex items-center gap-1.5 bg-brand-green border-2 border-brand-black px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wide shadow-brutal-sm">
+                                <i class="fa-solid fa-file-lines"></i> Paper
+                            </div>
+                        </div>
+                        <!-- Details Section -->
+                        <div class="details-section mt-4 pt-4 border-t-2 border-brand-black border-dashed">
+                            <div class="flex justify-between text-xs font-bold mb-2">
+                                <span class="text-gray-500">Weight:</span>
+                                <span>16 kg (Old textbooks & stacks of newspapers)</span>
+                            </div>
+                            <div class="flex justify-between text-xs font-bold mb-2">
+                                <span class="text-gray-500">Collected by:</span>
+                                <span>Raju Bhai</span>
+                            </div>
+                            <div class="flex justify-between text-xs font-bold">
+                                <span class="text-gray-500">Payment:</span>
+                                <span>Cash</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pickup Card 9 -->
+                    <div class="pickup-card brutal-card expand-card bg-white border-2 border-brand-black shadow-brutal p-5 rounded-xl" data-categories="plastic" data-date="2026-06-05">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <span class="bg-brand-green border-2 border-brand-black text-brand-black text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-md shadow-brutal-sm">Completed</span>
+                                <p class="font-black mt-3">Jun 05, 11:30 AM</p>
+                            </div>
+                            <p class="font-black text-xl bg-brand-pink px-3 py-1 rounded-lg border-2 border-brand-black shadow-brutal-sm">₹60</p>
+                        </div>
+                        <!-- Tags -->
+                        <div class="flex flex-wrap gap-2 mt-4 pt-4 border-t-2 border-brand-gray">
+                            <div class="flex items-center gap-1.5 bg-brand-pink border-2 border-brand-black px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wide shadow-brutal-sm">
+                                <i class="fa-solid fa-bottle-water"></i> Plastics
+                            </div>
+                        </div>
+                        <!-- Details Section -->
+                        <div class="details-section mt-4 pt-4 border-t-2 border-brand-black border-dashed">
+                            <div class="flex justify-between text-xs font-bold mb-2">
+                                <span class="text-gray-500">Weight:</span>
+                                <span>6 kg (Rigid containers, buckets & cans)</span>
+                            </div>
+                            <div class="flex justify-between text-xs font-bold mb-2">
+                                <span class="text-gray-500">Collected by:</span>
+                                <span>Manoj Scrap Center</span>
+                            </div>
+                            <div class="flex justify-between text-xs font-bold">
+                                <span class="text-gray-500">Payment:</span>
+                                <span>UPI</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pickup Card 10 -->
+                    <div class="pickup-card brutal-card expand-card bg-white border-2 border-brand-black shadow-brutal p-5 rounded-xl" data-categories="metals ewaste" data-date="2026-05-20">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <span class="bg-brand-green border-2 border-brand-black text-brand-black text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-md shadow-brutal-sm">Completed</span>
+                                <p class="font-black mt-3">May 20, 03:15 PM</p>
+                            </div>
+                            <p class="font-black text-xl bg-brand-blue px-3 py-1 rounded-lg border-2 border-brand-black shadow-brutal-sm">₹420</p>
+                        </div>
+                        <!-- Tags -->
+                        <div class="flex flex-wrap gap-2 mt-4 pt-4 border-t-2 border-brand-gray">
+                            <div class="flex items-center gap-1.5 bg-brand-blue border-2 border-brand-black px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wide shadow-brutal-sm">
+                                <i class="fa-solid fa-gear"></i> Metals
+                            </div>
+                            <div class="flex items-center gap-1.5 bg-brand-purple border-2 border-brand-black px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wide shadow-brutal-sm">
+                                <i class="fa-solid fa-laptop"></i> E-Waste
+                            </div>
+                        </div>
+                        <!-- Details Section -->
+                        <div class="details-section mt-4 pt-4 border-t-2 border-brand-black border-dashed">
+                            <div class="flex justify-between text-xs font-bold mb-2">
+                                <span class="text-gray-500">Total Weight:</span>
+                                <span>12 kg</span>
+                            </div>
+                            <!-- Material Breakdown -->
+                            <div class="bg-gray-50 border border-brand-black/20 rounded-lg p-2 mb-2 text-xs">
+                                <div class="flex justify-between font-bold py-0.5">
+                                    <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-brand-blue border border-brand-black"></span> Metals:</span>
+                                    <span>7 kg (Aluminum window frame)</span>
+                                </div>
+                                <div class="flex justify-between font-bold py-0.5">
+                                    <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-brand-purple border border-brand-black"></span> E-Waste:</span>
+                                    <span>5 kg (Dead CRT monitor)</span>
+                                </div>
+                            </div>
+                            <div class="flex justify-between text-xs font-bold mb-2">
+                                <span class="text-gray-500">Collected by:</span>
+                                <span>Suresh Kabadiwala</span>
+                            </div>
+                            <div class="flex justify-between text-xs font-bold">
+                                <span class="text-gray-500">Payment:</span>
+                                <span>UPI</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- No Results Found State -->
+                    <div id="no-results" class="hidden flex-col items-center justify-center py-12 text-center">
+                        <div class="w-16 h-16 bg-brand-gray border-2 border-brand-black rounded-2xl flex items-center justify-center mb-3 shadow-brutal-sm">
+                            <i class="fa-solid fa-box-open text-2xl text-gray-400"></i>
+                        </div>
+                        <h3 class="text-lg font-black uppercase tracking-wider text-brand-black">No Results Found</h3>
+                        <p class="text-xs font-bold text-gray-400 mt-1 max-w-xs">No pickups found for the selected date or scrap filters.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. PROFILE PAGE -->
+            <section id="page-profile" class="page-section hidden px-6 fade-in">
+                <div class="mb-8 mt-6">
+                    <h2 class="text-4xl font-black leading-tight text-brand-black mb-2 uppercase tracking-tighter">Profile</h2>
+                </div>
+
+                <div class="flex items-center gap-5 mb-5 bg-brand-blue border-2 border-brand-black shadow-brutal p-5 rounded-2xl brutal-card">
+                    <div class="w-16 h-16 bg-white border-2 border-brand-black rounded-full flex items-center justify-center text-3xl font-black text-brand-black shadow-brutal-sm">
+                        A
+                    </div>
+                    <div>
+                        <p class="font-black text-xl">Arjun M.</p>
+                        <p class="text-brand-black font-bold text-sm bg-white px-2 py-1 mt-1 border-2 border-brand-black rounded-md inline-block shadow-brutal-sm">+91 98765 43210</p>
+                    </div>
+                </div>
+
+                <!-- Cash Received From Scrap Card -->
+                <div class="mb-8 bg-brand-green border-2 border-brand-black shadow-brutal p-5 rounded-2xl brutal-card">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <span class="text-[10px] font-black uppercase tracking-widest text-brand-black opacity-70 block">Cash Received From Scrap</span>
+                            <div class="flex items-baseline gap-2 mt-1">
+                                <span class="text-4xl font-black text-brand-black tracking-tight">₹1,840</span>
+                                <span class="text-xs font-bold text-brand-black opacity-70 bg-white px-2.5 py-0.5 rounded-md border-2 border-brand-black shadow-brutal-sm">74.5 kg sold</span>
+                            </div>
+                        </div>
+                        <div class="w-12 h-12 bg-white border-2 border-brand-black rounded-full flex items-center justify-center shadow-brutal-sm shrink-0">
+                            <i class="fa-solid fa-indian-rupee-sign text-xl text-brand-black"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <button class="w-full text-left p-4 bg-white border-2 border-brand-black shadow-brutal brutal-card rounded-xl font-black flex justify-between items-center uppercase text-sm tracking-wide">
+                        Saved Addresses <i class="fa-solid fa-chevron-right text-brand-black text-sm"></i>
+                    </button>
+                    <button class="w-full text-left p-4 bg-white border-2 border-brand-black shadow-brutal brutal-card rounded-xl font-black flex justify-between items-center uppercase text-sm tracking-wide">
+                        Payment Methods <i class="fa-solid fa-chevron-right text-brand-black text-sm"></i>
+                    </button>
+                    <button class="w-full text-left p-4 bg-white border-2 border-brand-black shadow-brutal brutal-card rounded-xl font-black flex justify-between items-center uppercase text-sm tracking-wide">
+                        Help & Support <i class="fa-solid fa-chevron-right text-brand-black text-sm"></i>
+                    </button>
+                    <button class="w-full text-left p-4 mt-8 bg-brand-pink border-2 border-brand-black shadow-brutal brutal-card rounded-xl font-black text-brand-black uppercase text-sm tracking-wide flex justify-between items-center">
+                        Log Out <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    </button>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- FLOATING DOCK Navigation -->
+        <nav class="absolute bottom-6 left-6 right-6 bg-brand-white border-4 border-brand-black rounded-3xl shadow-brutal flex justify-around px-2 py-3 z-20 transition-transform">
+            <button class="nav-btn active flex flex-col items-center gap-1 text-brand-black transition-all transform hover:-translate-y-1" data-target="page-home">
+                <i class="fa-solid fa-house text-xl mb-1"></i>
+                <span class="text-[10px] font-black uppercase tracking-widest">Home</span>
+            </button>
+            <button class="nav-btn flex flex-col items-center gap-1 text-gray-400 hover:text-brand-black transition-all transform hover:-translate-y-1" data-target="page-services">
+                <i class="fa-solid fa-box-open text-xl mb-1"></i>
+                <span class="text-[10px] font-black uppercase tracking-widest">Services</span>
+            </button>
+            <button class="nav-btn flex flex-col items-center gap-1 text-gray-400 hover:text-brand-black transition-all transform hover:-translate-y-1" data-target="page-activity">
+                <i class="fa-solid fa-clock-rotate-left text-xl mb-1"></i>
+                <span class="text-[10px] font-black uppercase tracking-widest">Activity</span>
+            </button>
+            <button class="nav-btn flex flex-col items-center gap-1 text-gray-400 hover:text-brand-black transition-all transform hover:-translate-y-1" data-target="page-profile">
+                <i class="fa-solid fa-user text-xl mb-1"></i>
+                <span class="text-[10px] font-black uppercase tracking-widest">Profile</span>
+            </button>
+        </nav>
+
+        <!-- Overlays for Booking Flow -->
+        <div id="finding-overlay" class="absolute inset-0 bg-brand-white flex flex-col items-center justify-center z-50 hidden opacity-0 transition-opacity duration-300 px-6">
+            <div class="w-16 h-16 border-8 border-brand-green border-t-brand-black rounded-full animate-spin mb-8 shadow-brutal"></div>
+            <h2 class="text-3xl font-black mb-2 text-brand-black uppercase">Connecting</h2>
+            <p class="text-brand-black opacity-70 text-center font-bold">Contacting local kabadiwalas via automated call...</p>
+        </div>
+
+        <div id="success-overlay" class="absolute inset-0 bg-brand-green flex flex-col items-center justify-center z-50 hidden opacity-0 transition-opacity duration-300 px-6">
+            <div class="bg-brand-white border-4 border-brand-black rounded-3xl p-8 w-full max-w-sm text-center shadow-brutal-lg">
+                <div class="w-20 h-20 bg-brand-white border-4 border-brand-black rounded-full flex items-center justify-center mx-auto mb-5 shadow-brutal">
+                    <i class="fa-solid fa-check text-4xl text-brand-black"></i>
+                </div>
+                <h2 class="text-3xl font-black mb-1 text-brand-black uppercase tracking-tight">Pickup Booked!</h2>
+                <div class="inline-block bg-brand-yellow border-2 border-brand-black px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider mb-4 shadow-brutal-sm">
+                    <span id="pickup-timing-badge">Pickup Scheduled for Today</span>
+                </div>
+                <p id="pickup-timing-desc" class="text-brand-black opacity-70 mb-6 font-bold text-xs leading-relaxed">
+                    Raju Bhai will visit with his weighing cart today before 8:00 PM.
+                </p>
+                <button id="finish-btn" class="w-full bg-brand-black text-brand-white font-black py-4 rounded-xl transition-all transform shadow-brutal border-2 border-brand-black brutal-card uppercase tracking-widest">
+                    View in Activity
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Calendar Overlay -->
+    <div id="calendar-overlay" class="fixed inset-0 bg-brand-gray backdrop-blur-sm z-50 hidden flex-col justify-end items-center sm:justify-center p-4">
+        <div class="bg-white border-4 border-brand-black shadow-brutal rounded-3xl w-full max-w-sm overflow-hidden transform translate-y-full transition-transform duration-300 relative" id="calendar-modal">
+            <div id="calendar-header" class="bg-brand-yellow p-4 border-b-4 border-brand-black flex justify-between items-center transition-colors duration-300">
+                <button id="calendar-prev" class="w-8 h-8 bg-white border-2 border-brand-black rounded-full flex items-center justify-center active:translate-y-1 shadow-brutal-sm"><i class="fa-solid fa-chevron-left"></i></button>
+                <h3 class="font-black text-lg uppercase tracking-wider" id="calendar-month">September 2026</h3>
+                <button id="calendar-next" class="w-8 h-8 bg-white border-2 border-brand-black rounded-full flex items-center justify-center active:translate-y-1 shadow-brutal-sm"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+            <div class="p-4">
+                <div class="grid grid-cols-7 gap-2 text-center font-bold text-sm text-gray-400 mb-2">
+                    <div>SU</div><div>MO</div><div>TU</div><div>WE</div><div>TH</div><div>FR</div><div>SA</div>
+                </div>
+                <div id="calendar-grid" class="grid grid-cols-7 gap-2 text-center font-black text-base">
+                </div>
+                <div class="mt-6 flex gap-3">
+                    <button id="calendar-clear" class="flex-1 bg-white text-gray-500 border-2 border-gray-300 py-3 rounded-xl font-black uppercase active:translate-y-1">Clear</button>
+                    <button id="calendar-close" class="flex-1 bg-brand-black text-white border-2 border-brand-black shadow-brutal-sm py-3 rounded-xl font-black uppercase active:translate-y-1">Done</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

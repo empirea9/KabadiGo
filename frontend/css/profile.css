@@ -1,0 +1,185 @@
+/* ==========================================================================
+   PROFILE SECTION STYLES (ISOLATED)
+   Dedicated styles for the Profile page elements, actions, and states.
+   ========================================================================== */
+
+/* User Profile Card */
+.profile-user-card {
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.profile-avatar {
+    background-color: #FFFFFF !important;
+    color: #171717 !important;
+    border-color: #171717 !important;
+}
+
+.profile-phone {
+    background-color: #FFFFFF !important;
+    color: #171717 !important;
+    border-color: #171717 !important;
+}
+
+/* Cash Summary Card */
+.profile-cash-card {
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.profile-rupee-badge {
+    background-color: #FFFFFF !important;
+    color: #171717 !important;
+    border-color: #171717 !important;
+}
+
+#profile-weight-amount {
+    background-color: #FFFFFF !important;
+    color: #171717 !important;
+    border-color: #171717 !important;
+}
+
+/* Saved Addresses Card & List */
+.profile-saved-addresses-card {
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.profile-address-item {
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.profile-address-item:hover {
+    transform: translateX(3px);
+}
+
+.profile-tag-badge {
+    color: #171717 !important;
+    border-color: #171717 !important;
+}
+
+.profile-use-address-btn {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* Action Buttons & GitHub Repo Link Button */
+.profile-action-btn,
+.profile-github-btn {
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* LOG OUT Button - Bold Neo-Brutalist Red */
+.profile-logout-btn {
+    background-color: #FF5C5C !important; /* Bold Red */
+    color: #171717 !important;
+    border-color: #171717 !important;
+    box-shadow: 4px 4px 0px 0px #171717 !important;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.profile-logout-btn:hover {
+    background-color: #EF4444 !important;
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: 6px 6px 0px 0px #171717 !important;
+}
+
+.profile-logout-btn:active {
+    background-color: #DC2626 !important;
+    transform: translateY(2px) scale(0.99);
+    box-shadow: 2px 2px 0px 0px #171717 !important;
+}
+
+/* --------------------------------------------------------------------------
+   Profile Dark Mode Overrides
+   -------------------------------------------------------------------------- */
+.dark .profile-user-card {
+    border-color: var(--brand-black) !important;
+    box-shadow: 4px 4px 0px 0px var(--brand-black) !important;
+}
+
+.dark .profile-user-card * {
+    color: #171717 !important;
+}
+
+.dark .profile-avatar,
+.dark .profile-phone {
+    background-color: #FFFFFF !important;
+    border-color: #171717 !important;
+    box-shadow: 2px 2px 0px 0px #171717 !important;
+    color: #171717 !important;
+}
+
+.dark .profile-cash-card {
+    border-color: var(--brand-black) !important;
+    box-shadow: 4px 4px 0px 0px var(--brand-black) !important;
+}
+
+.dark .profile-cash-card * {
+    color: #171717 !important;
+}
+
+.dark .profile-rupee-badge,
+.dark #profile-weight-amount {
+    background-color: #FFFFFF !important;
+    border-color: #171717 !important;
+    box-shadow: 2px 2px 0px 0px #171717 !important;
+    color: #171717 !important;
+}
+
+.dark .profile-saved-addresses-card {
+    background-color: var(--brand-white) !important;
+    border-color: var(--brand-black) !important;
+    box-shadow: 4px 4px 0px 0px var(--brand-black) !important;
+}
+
+.dark .profile-saved-addresses-card > button {
+    color: var(--brand-black) !important;
+}
+
+.dark .profile-address-item {
+    background-color: var(--brand-gray) !important;
+    border-color: var(--brand-black) !important;
+    box-shadow: 2px 2px 0px 0px var(--brand-black) !important;
+}
+
+.dark .profile-address-item p {
+    color: var(--brand-black) !important;
+}
+
+.dark .profile-address-item .profile-use-address-btn {
+    background-color: var(--brand-white) !important;
+    border-color: var(--brand-black) !important;
+    color: var(--brand-black) !important;
+    box-shadow: 2px 2px 0px 0px var(--brand-black) !important;
+}
+
+.dark .profile-address-item .profile-use-address-btn:hover {
+    background-color: var(--brand-green) !important;
+    color: #171717 !important;
+}
+
+.dark .profile-action-btn,
+.dark .profile-github-btn {
+    background-color: var(--brand-white) !important;
+    border-color: var(--brand-black) !important;
+    box-shadow: 4px 4px 0px 0px var(--brand-black) !important;
+    color: var(--brand-black) !important;
+}
+
+.dark .profile-action-btn:hover,
+.dark .profile-github-btn:hover {
+    background-color: var(--brand-gray) !important;
+}
+
+.dark .profile-logout-btn {
+    background-color: #FF5C5C !important;
+    color: #171717 !important;
+    border-color: var(--brand-black) !important;
+    box-shadow: 4px 4px 0px 0px var(--brand-black) !important;
+}
+
+.dark .profile-logout-btn:hover {
+    background-color: #EF4444 !important;
+    box-shadow: 6px 6px 0px 0px var(--brand-black) !important;
+}
