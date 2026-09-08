@@ -24,7 +24,7 @@
     --brand-orange: #FED7AA;
 }
 
-/* Core Brand Utility Classes (Guarantees solid backgrounds & prevents transparency) */
+/* Core Brand Utility Classes */
 .bg-brand-white { background-color: var(--brand-white) !important; }
 .bg-brand-gray { background-color: var(--brand-gray) !important; }
 .bg-brand-black { background-color: var(--brand-black) !important; }
@@ -47,14 +47,13 @@
 .shadow-brutal-sm { box-shadow: 2px 2px 0px 0px var(--brand-black) !important; }
 .shadow-brutal-lg { box-shadow: 6px 6px 0px 0px var(--brand-black) !important; }
 
-/* Dark Mode Overrides: Text not in pastel color remains white */
+/* Dark Mode Overrides */
 .dark body {
     background-color: var(--brand-gray) !important;
     color: var(--brand-black);
 }
 
-.dark #app-content,
-.dark .page-section {
+.dark #app-content, .dark .page-section {
     background-color: transparent !important;
     color: var(--brand-black);
 }
@@ -69,8 +68,7 @@
     color: var(--brand-black);
 }
 
-.dark input, 
-.dark textarea {
+.dark input,  .dark textarea {
     background-color: var(--brand-white) !important;
     color: var(--brand-black) !important;
     border-color: var(--brand-black) !important;
@@ -80,37 +78,19 @@
     color: #9CA3AF !important;
 }
 
-/* In dark mode, all text & icons inside pastel backgrounds must remain BLACK */
-.dark .bg-brand-green,
-.dark .bg-brand-yellow,
-.dark .bg-brand-blue,
-.dark .bg-brand-pink,
-.dark .bg-brand-purple,
-.dark .bg-brand-orange {
+.dark .bg-brand-green, .dark .bg-brand-yellow, .dark .bg-brand-blue, .dark .bg-brand-pink, .dark .bg-brand-purple, .dark .bg-brand-orange {
     color: #171717 !important;
 }
 
-.dark .bg-brand-green *,
-.dark .bg-brand-yellow *,
-.dark .bg-brand-blue *,
-.dark .bg-brand-pink *,
-.dark .bg-brand-purple *,
-.dark .bg-brand-orange * {
+.dark .bg-brand-green *, .dark .bg-brand-yellow *, .dark .bg-brand-blue *, .dark .bg-brand-pink *, .dark .bg-brand-purple *, .dark .bg-brand-orange * {
     color: #171717 !important;
 }
 
-/* SVG icons inside pastel elements should also have black stroke/fill */
-.dark .bg-brand-green svg,
-.dark .bg-brand-yellow svg,
-.dark .bg-brand-blue svg,
-.dark .bg-brand-pink svg,
-.dark .bg-brand-purple svg,
-.dark .bg-brand-orange svg {
+.dark .bg-brand-green svg, .dark .bg-brand-yellow svg, .dark .bg-brand-blue svg, .dark .bg-brand-pink svg, .dark .bg-brand-purple svg, .dark .bg-brand-orange svg {
     color: #171717 !important;
     stroke: #171717 !important;
 }
 
-/* White pills, badges, and buttons inside pastel elements MUST have solid BLACK text and black borders */
 .dark .bg-brand-green .bg-brand-black,
 .dark .bg-brand-yellow .bg-brand-black,
 .dark .bg-brand-blue .bg-brand-black,
@@ -144,13 +124,10 @@
     color: #171717 !important;
 }
 
-/* In general, in dark mode .bg-brand-black is light/white, so its text must be black */
-.dark .bg-brand-black,
-.dark .bg-brand-black * {
+.dark .bg-brand-black, .dark .bg-brand-black * {
     color: #171717 !important;
 }
 
-/* White circular icon badges inside pastel elements stay pure white with black icon */
 .dark .bg-brand-green .bg-white,
 .dark .bg-brand-yellow .bg-white,
 .dark .bg-brand-blue .bg-white,
@@ -172,62 +149,64 @@
     color: #171717 !important;
 }
 
-/* In dark mode, unselected waste type buttons have white inner circle borders & shadows */
 .dark .waste-btn:not(.active) .w-12.h-12,
 .dark .waste-btn:not(.active) .rounded-full.border-brand-black {
     border-color: #FFFFFF !important;
     box-shadow: 2px 2px 0px 0px #FFFFFF !important;
 }
-
 .dark .waste-btn:not(.active) .w-12.h-12 svg,
 .dark .waste-btn:not(.active) .w-12.h-12 i {
     color: #FFFFFF !important;
     stroke: #FFFFFF !important;
 }
 
-/* In dark mode, keep borders black ONLY for Services section cards */
 .dark #page-services .tilt-card,
 .dark #page-services .tilt-card * {
     border-color: #171717 !important;
 }
 
-/* White outer shadow for Services cards */
 .dark #page-services .tilt-card {
     box-shadow: 4px 4px 0px 0px var(--brand-black) !important;
 }
 
-/* Keep inner pill/badge shadows black on top of pastel cards */
 .dark #page-services .tilt-card .shadow-brutal-sm {
     box-shadow: 2px 2px 0px 0px #171717 !important;
 }
 
-/* Invert Leaflet OpenStreetMap tiles in Dark Mode */
 .dark .leaflet-tile-pane {
     filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
 }
-
 .dark .leaflet-container {
     background: #171717 !important;
 }
-
 .dark .brutal-pin {
     border-color: var(--brand-black);
     box-shadow: 3px 3px 0px 0px var(--brand-black);
 }
 
-/* Custom styles to enhance Tailwind */
+/* Screen bounds & scroll management */
+html, body {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
 
 body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
 
-/* Hide scrollbar for clean app look but allow scroll */
+#app-content {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+}
+
 #app-content::-webkit-scrollbar {
     width: 0px;
     background: transparent;
 }
-
 .hide-scrollbar::-webkit-scrollbar {
     display: none;
 }
@@ -236,12 +215,10 @@ body {
     scrollbar-width: none;
 }
 
-/* Remove tap highlight on mobile for buttons */
 button, .waste-btn, .nav-btn {
     -webkit-tap-highlight-color: transparent;
 }
 
-/* Page display logic */
 .page-section {
     display: none;
 }
@@ -249,31 +226,43 @@ button, .waste-btn, .nav-btn {
     display: block;
 }
 
-/* Active Navigation Item Styling */
+/* Nav Button interactive styles */
+.nav-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition: color 0.15s ease;
+}
+
+.nav-btn * {
+    pointer-events: none;
+}
+
 .nav-btn.active {
     color: var(--brand-black);
-    transform: translateY(-4px);
 }
 
-/* --- NEO-BRUTALIST INTERACTIVE ANIMATIONS --- */
+.nav-btn:hover {
+    transform: translateY(-2px);
+}
 
 .brutal-card {
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); /* Bouncy pop-out effect */
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-
-/* Hover: Pop out */
 .brutal-card:hover {
     transform: translateY(-6px) scale(1.02);
     box-shadow: 6px 6px 0px 0px var(--brand-black) !important;
 }
-
-/* Active (Clicking): Sink into the page */
 .brutal-card:active {
     transform: translateY(2px) scale(0.98);
     box-shadow: 2px 2px 0px 0px var(--brand-black) !important;
 }
 
-/* Custom Neo-Brutalist Leaflet Pin Marker */
 .brutal-pin-marker {
     background: transparent;
     border: none;
@@ -281,7 +270,7 @@ button, .waste-btn, .nav-btn {
 .brutal-pin {
     width: 36px;
     height: 36px;
-    background: #FEF08A; /* brand-yellow */
+    background: #FEF08A;
     border: 3px solid var(--brand-black);
     box-shadow: 3px 3px 0px 0px var(--brand-black);
     border-radius: 50% 50% 50% 0;
@@ -300,6 +289,7 @@ button, .waste-btn, .nav-btn {
     color: #171717;
     font-size: 14px;
 }
+
 .leaflet-control-attribution {
     display: none !important;
 }
@@ -308,11 +298,6 @@ button, .waste-btn, .nav-btn {
     z-index: 1 !important;
 }
 
-/* 
-  Special state for selected Waste Buttons. 
-  Crisp Neo-Brutalist tilt (-2deg on odd/left column, +2deg on even/right column)
-  with pressed depth and 3px border.
-*/
 .waste-btn {
     transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), 
                 box-shadow 0.2s ease, 
@@ -328,7 +313,6 @@ button, .waste-btn, .nav-btn {
     border-color: var(--brand-black) !important;
     outline: none !important;
 }
-
 #waste-types .waste-btn:nth-child(even).active {
     transform: translate(1px, 2px) rotate(2deg) !important;
     box-shadow: 2px 2px 0px 0px var(--brand-black) !important;
@@ -341,13 +325,11 @@ button, .waste-btn, .nav-btn {
     transform: translate(0px, 0px) rotate(-2.5deg) scale(1.02) !important;
     box-shadow: 4px 4px 0px 0px var(--brand-black) !important;
 }
-
 #waste-types .waste-btn:nth-child(even).active:hover {
     transform: translate(0px, 0px) rotate(2.5deg) scale(1.02) !important;
     box-shadow: 4px 4px 0px 0px var(--brand-black) !important;
 }
 
-/* Utility classes for overlays */
 .fade-in {
     opacity: 1 !important;
     animation: fadeIn 0.3s ease-out;
@@ -358,13 +340,6 @@ button, .waste-btn, .nav-btn {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* --- Home Page Staggered Loading Entrance (0.1s Apart) --- */
-#page-home.active .home-stagger {
-    animation: cardEntrance 0.45s cubic-bezier(0.16, 1, 0.3, 1) backwards;
-    animation-delay: calc(var(--stagger, 0) * 0.1s);
-}
-
-/* --- Services Cards Staggered Loading Entrance (0.2s Apart) --- */
 @keyframes cardEntrance {
     0% {
         opacity: 0;
@@ -376,10 +351,16 @@ button, .waste-btn, .nav-btn {
     }
 }
 
+/* Home Page Staggered Loading Entrance (0.1s Apart) */
+#page-home.active .home-stagger {
+    animation: cardEntrance 0.45s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+    animation-delay: calc(var(--stagger, 0) * 0.1s);
+}
+
+/* Services Cards Staggered Entrance */
 #page-services.active .card-wrapper {
     animation: cardEntrance 0.45s cubic-bezier(0.16, 1, 0.3, 1) backwards;
 }
-
 #page-services.active .card-wrapper:nth-child(1) { animation-delay: 0.0s; }
 #page-services.active .card-wrapper:nth-child(2) { animation-delay: 0.1s; }
 #page-services.active .card-wrapper:nth-child(3) { animation-delay: 0.2s; }
@@ -387,11 +368,10 @@ button, .waste-btn, .nav-btn {
 #page-services.active .card-wrapper:nth-child(5) { animation-delay: 0.4s; }
 #page-services.active .card-wrapper:nth-child(6) { animation-delay: 0.5s; }
 
-/* --- Activity Cards Staggered Loading Entrance (0.1s Apart) --- */
+/* Activity Cards Staggered Loading Entrance (0.1s Apart) */
 #page-activity.active .pickup-card {
     animation: cardEntrance 0.45s cubic-bezier(0.16, 1, 0.3, 1) backwards;
 }
-
 #page-activity.active .pickup-card:nth-child(1) { animation-delay: 0.0s; }
 #page-activity.active .pickup-card:nth-child(2) { animation-delay: 0.1s; }
 #page-activity.active .pickup-card:nth-child(3) { animation-delay: 0.2s; }
@@ -404,65 +384,45 @@ button, .waste-btn, .nav-btn {
 #page-activity.active .pickup-card:nth-child(10) { animation-delay: 0.9s; }
 #page-activity.active .pickup-card:nth-child(n+11) { animation-delay: 1.0s; }
 
-/* --- Save Pin Animations & Feedback --- */
-@keyframes pinPop {
-    0% {
-        transform: scale(1) rotate(0deg);
-    }
-    30% {
-        transform: scale(1.35) rotate(-15deg);
-        background-color: #86EFAC !important;
-    }
-    60% {
-        transform: scale(1.1) rotate(10deg);
-    }
-    100% {
-        transform: scale(1) rotate(0deg);
-    }
+/* Profile Staggered Entrance (0.1s Apart) */
+#page-profile.active .profile-stagger {
+    animation: cardEntrance 0.45s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+    animation-delay: calc(var(--stagger, 0) * 0.1s);
 }
 
+/* Save Pin Animations */
+@keyframes pinPop {
+    0% { transform: scale(1) rotate(0deg); }
+    30% { transform: scale(1.35) rotate(-15deg); background-color: #86EFAC !important; }
+    60% { transform: scale(1.1) rotate(10deg); }
+    100% { transform: scale(1) rotate(0deg); }
+}
 .animate-pin-pop {
     animation: pinPop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
 }
 
 @keyframes saveBadgeSuccess {
-    0% {
-        transform: scale(1);
-    }
-    30% {
-        transform: scale(1.2) translateY(-2px);
-    }
-    60% {
-        transform: scale(0.95);
-    }
-    100% {
-        transform: scale(1) translateY(0);
-    }
+    0% { transform: scale(1); }
+    30% { transform: scale(1.2) translateY(-2px); }
+    60% { transform: scale(0.95); }
+    100% { transform: scale(1) translateY(0); }
 }
-
 .animate-save-badge {
     animation: saveBadgeSuccess 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
 }
 
 @keyframes mapMarkerSave {
-    0%, 100% {
-        transform: rotate(-45deg) translateY(0);
-    }
-    30% {
-        transform: rotate(-45deg) translateY(-16px) scale(1.2);
-    }
-    60% {
-        transform: rotate(-45deg) translateY(-4px);
-    }
+    0%, 100% { transform: rotate(-45deg) translateY(0); }
+    30% { transform: rotate(-45deg) translateY(-16px) scale(1.2); }
+    60% { transform: rotate(-45deg) translateY(-4px); }
 }
-
 .animate-marker-save .brutal-pin {
     animation: mapMarkerSave 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
     background: #86EFAC !important;
 }
 
 .saved-address-tag.active {
-    background-color: #FEF08A !important; /* brand-yellow */
+    background-color: #FEF08A !important;
     transform: translateY(1px) !important;
     box-shadow: 1px 1px 0px 0px var(--brand-black) !important;
 }
@@ -498,24 +458,20 @@ button, .waste-btn, .nav-btn {
 .card-wrapper.active {
     z-index: 50;
 }
-
-.tilt-card.expanded,
-.tilt-card.collapsing {
+.tilt-card.expanded, .tilt-card.collapsing {
     z-index: 50;
 }
 
 .tilt-card.expanded {
-    width: calc(200% + 1rem); /* 2 grid columns + 1 gap */
+    width: calc(200% + 1rem);
     transform: rotate(0deg) !important;
 }
 
-/* Card inner layout */
 .card-main {
     width: 100%;
     transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     flex-shrink: 0;
 }
-
 .tilt-card.expanded .card-main {
     width: 110px;
 }
@@ -528,15 +484,12 @@ button, .waste-btn, .nav-btn {
     transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.15s ease;
     flex-shrink: 0;
 }
-
 .tilt-card.expanded .card-details {
     width: calc(100% - 115px);
     opacity: 1;
     pointer-events: auto;
     transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease 0.08s;
 }
-
-
 
 .expand-card {
     transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -552,6 +505,7 @@ button, .waste-btn, .nav-btn {
     border-top-width: 0 !important;
     transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease, margin-top 0.4s ease, padding-top 0.4s ease, border-top-width 0.4s ease;
 }
+
 .expand-card.expanded .details-section {
     max-height: 300px;
     opacity: 1;
@@ -559,9 +513,3 @@ button, .waste-btn, .nav-btn {
     padding-top: 1rem !important;
     border-top-width: 2px !important;
 }
-
-#page-profile.active .profile-stagger {
-    animation: cardEntrance 0.45s cubic-bezier(0.16, 1, 0.3, 1) backwards;
-    animation-delay: calc(var(--stagger, 0) * 0.1s);
-}
-
